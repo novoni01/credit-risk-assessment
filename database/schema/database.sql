@@ -1,7 +1,20 @@
-DROP TABLE IF EXISTS Rejected
-DROP TABLE IF EXISTS Accepted_Loans
-DROP TABLE IF EXISTS Borrowers
-DROP TABLE IF EXISTS Loan_Payments
+-- psql -d postgres
+-- CREATE DATABASE credit_risk;
+-- \l -- to verify u created it
+-- \q -- to exit
+
+-- psql -d credit_risk
+-- \dt -- list all tables
+-- \d borrowers -- peek inside borrowers table
+
+DROP INDEX IF EXISTS idx_accepted_loans_borrower;
+DROP INDEX IF EXISTS idx_accepted_loans_status;
+DROP INDEX IF EXISTS idx_rejected_borrower;
+
+DROP TABLE IF EXISTS Borrowers;
+DROP TABLE IF EXISTS Accepted_Loans;
+DROP TABLE IF EXISTS Loan_Payments;
+DROP TABLE IF EXISTS Rejected;
 
 -- customers table
 CREATE TABLE Borrowers (
@@ -23,7 +36,7 @@ CREATE TABLE Borrowers (
     verification_status   TEXT,
 
     created_at            TIMESTAMPTZ DEFAULT now() -- records when borrower is entered into system
-)
+);
 
 -- accepted table
 CREATE TABLE Accepted_Loans (
@@ -43,7 +56,7 @@ CREATE TABLE Accepted_Loans (
     application_type      VARCHAR(30),
 
     created_at            TIMESTAMPTZ DEFAULT now()
-)
+);
 
 -- loans table
 CREATE TABLE Loan_Payments (
@@ -54,7 +67,7 @@ CREATE TABLE Loan_Payments (
     -- fill in
 
     created_at            TIMESTAMPTZ DEFAULT now()
-)
+);
 
 -- rejected table
 CREATE TABLE Rejected ( 
@@ -68,7 +81,7 @@ CREATE TABLE Rejected (
     dti                   NUMERIC(6, 2), -- map to "Debt-To-Income Ratio"
 
     created_at            TIMESTAMPTZ DEFAULT now()
-)
+);
 
 -- ml table?
 
@@ -76,4 +89,3 @@ CREATE TABLE Rejected (
 CREATE INDEX idx_accepted_loans_borrower ON Accepted_Loans (borrower_id);
 CREATE INDEX idx_accepted_loans_status ON Accepted_Loans (loan_status);
 CREATE INDEX idx_rejected_borrower ON Rejected (borrower_id);
-CREATE INDEX idx_loan_payments_loan_date ON Loan_Payments (loan_id, payment_date);
