@@ -57,11 +57,15 @@ CREATE TABLE Loan_Payments (
 )
 
 -- rejected table
-CREATE TABLE Rejected (
+CREATE TABLE Rejected ( 
     application_id        BIGSERIAL PRIMARY KEY,
     borrower_id           INTEGER REFERENCES borrowers(borrower_id),
 
-    -- fill in
+    -- kaggle
+    amount_requested      NUMERIC(12, 2), -- map to "Amount Requested"
+    application_date      DATE, -- map to "Application Date"
+    loan_title            TEXT, -- map to "Loan Title"
+    dti                   NUMERIC(6, 2), -- map to "Debt-To-Income Ratio"
 
     created_at            TIMESTAMPTZ DEFAULT now()
 )
