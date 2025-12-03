@@ -9,7 +9,6 @@
 
 DROP INDEX IF EXISTS idx_accepted_loans_borrower;
 DROP INDEX IF EXISTS idx_accepted_loans_status;
-DROP INDEX IF EXISTS idx_rejected_borrower;
 
 DROP TABLE IF EXISTS Borrowers;
 DROP TABLE IF EXISTS Accepted_Loans;
@@ -72,7 +71,6 @@ CREATE TABLE Loan_Payments (
 -- rejected table
 CREATE TABLE Rejected ( 
     application_id        BIGSERIAL PRIMARY KEY,
-    borrower_id           INTEGER REFERENCES borrowers(borrower_id),
 
     -- kaggle
     amount_requested      NUMERIC(12, 2), -- map to "Amount Requested"
@@ -88,4 +86,3 @@ CREATE TABLE Rejected (
 -- indexing
 CREATE INDEX idx_accepted_loans_borrower ON Accepted_Loans (borrower_id);
 CREATE INDEX idx_accepted_loans_status ON Accepted_Loans (loan_status);
-CREATE INDEX idx_rejected_borrower ON Rejected (borrower_id);
