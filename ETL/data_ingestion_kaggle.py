@@ -7,6 +7,32 @@ import kaggle
 from kaggle.api.kaggle_api_extended import KaggleApi
 import random
 
+def move_kaggle_json():
+    #Get the user path 
+    user_path = os.path.expanduser("~")
+    #Make the path to the kaggle json
+    downloads_path = os.path.join(user_path, 'Downloads/kaggle.json')
+
+    #Make the .kaggle folder in user
+    kaggle_folder = os.path.join(user_path, ".kaggle")
+    os.makedirs(kaggle_folder, exist_ok= True)
+    #print(os.path.exists(downloads_path))
+
+    if os.path.exists(downloads_path):
+        try:
+            print("Moving kaggle.json to user")
+            #Move json to the folder
+            shutil.move(downloads_path, kaggle_folder)
+        except Exception as e:
+            print(f"Error when trying to move kaggle.json: {e}")
+    else:
+        #attempt to check if kaggle.json already exists
+        final = os.path.join(kaggle_folder, "kaggle.json")
+        if os.path.exists(final):
+            print("Kaggle json already exists in user")
+        else:
+            print("Please download kaggle.json and make sure it is in your downloads folder")
+
 #gather data from a specific csv file and return as a pandas df
 def initialize_data_path():
     """
