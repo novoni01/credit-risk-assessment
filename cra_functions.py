@@ -26,8 +26,9 @@ def initialize_data_path():
 def get_kaggle_data(DATA = Path):
     """
     Function that uses Kaggle API to download all datasets hosted by Kaggle
-    
-    DATA = Path object that points to the 'training data' folder
+
+    Params:
+        DATA : Path object that points to the 'training data' folder
     """
     try:
         api = KaggleApi()
@@ -40,7 +41,12 @@ def get_kaggle_data(DATA = Path):
         print(f"Error when running get_kaggle_data: {e}")
 
 def retrieve_training_csv(DATA = Path): 
-    """ Function that returns all the csv files in the training data folder as a dataframe object """ 
+    """ 
+    Function that returns all the csv files in the training data folder as a dataframe object 
+    
+    Params:
+        DATA : Path object that points to the 'training data' folder
+    """ 
     csv_list = list(DATA.glob("**/*.csv")) 
     return_list = [] 
     #print(csv_list)
@@ -76,8 +82,12 @@ def get_dir_size(path):
         return total/1000000
     
 def delete_large_files(DATA = Path): 
-    """ Function that deletes the large files downloaded from kaggle to save space 
-    Deletes files to prevent any storage errors when pushing code to github """
+    """ 
+    Function that deletes the large files downloaded from kaggle to save space. Deletes files to prevent any storage errors when pushing code to github.
+    
+    Params:
+        DATA : Path object that points to the 'training data' folder
+    """
 
     for paths in DATA.glob("**/*"): 
         if os.path.isdir(paths): 
@@ -101,9 +111,8 @@ def accepted_loans_df(dataframe_list = list, sample_csv = True, seed = 0):
     Returns a cleaned up dataframe of Accepted_Loans with relevant columns for model training
     Params:
         dataframe_list : list containing dataframe objects of all the csv files in the "training_data" folder
-        sample_csv : True (default) returns a small sample size with a random seed to replicate results
-        sample_csv(continued) : if False is passed the entire cleaned df is returned (2 million entries)
-        seed : integer between 0 and 999, used to replicate random_sample output for debugging. If no seed is passed a random one will be generated
+        sample_csv (True as default) : True returns a small sample size with a random seed to replicate results. If False is passed the entire cleaned df is returned (2 million entries)
+        seed (random seed is default) : integer between 0 and 999, used to replicate random_sample output for debugging. If no seed is passed a random one will be generated
     """
     #Create a random seed for sampling the large dataset if no seed is provided
     if seed == 0:
@@ -158,9 +167,8 @@ def rejected_loans_df(dataframe_list = list, sample_csv = True, seed = 0):
     Returns a cleaned up dataframe of Rejected_Loans with relevant columns for model training
     Params:
         dataframe_list : list containing dataframe objects of all the csv files in the "training_data" folder
-        sample_csv : True (default) returns a small sample size with a random seed to replicate results
-        sample_csv(continued) : if False is passed the entire cleaned df is returned (2 million entries)
-        seed : integer between 0 and 999, used to replicate random_sample output for debugging. If no seed is passed a random one will be generated
+        sample_csv (True as default) : True returns a small sample size with a random seed to replicate results. If False is passed the entire cleaned df is returned (2 million entries)
+        seed (random seed is default) : integer between 0 and 999, used to replicate random_sample output for debugging. If no seed is passed a random one will be generated
     """
 
     #Create a random seed for sampling the large dataset if no seed is provided
