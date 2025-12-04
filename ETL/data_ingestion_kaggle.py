@@ -8,6 +8,9 @@ from kaggle.api.kaggle_api_extended import KaggleApi
 import random
 
 def move_kaggle_json():
+    """
+    Function that automatically moves the 'kaggle.json' file from the user's download folder to the final destination so that all Kaggle API calls work properly.
+    """
     #Get the user path 
     user_path = os.path.expanduser("~")
     #Make the path to the kaggle json
