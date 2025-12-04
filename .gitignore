@@ -1,2 +1,4 @@
-read.py
 .venv
+__pycache__/
+*.pyc
+read.py
