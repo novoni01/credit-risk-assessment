@@ -61,7 +61,14 @@ def testing_all_functions():
     print("success")
 
 
+def test_parquiet():
+    data_path = data_ingestion_kaggle.initialize_data_path()
+    df = data_ingestion_kaggle.clean_hdma_rejected(data_path)
+    df.head(10)
 
 if __name__ == "__main__":
+    start = time.time()
     print("testing functions")
-    testing_all_functions()
+    test_parquiet()
+    end = time.time()
+    print(f"Time elapsed for parquiet path:{end-start:.2f} seconds")

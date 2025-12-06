@@ -1,8 +1,8 @@
 import os
-import sqlite3
 from pathlib import Path
 import pandas as pd
 import shutil
+import csv
 import kaggle
 from kaggle.api.kaggle_api_extended import KaggleApi
 import random
@@ -36,7 +36,6 @@ def move_kaggle_json():
         else:
             print("Please download kaggle.json and make sure it is in your downloads folder")
 
-#gather data from a specific csv file and return as a pandas df
 def initialize_data_path():
     """
     Returns a path object pointing to the 'training data' folder
@@ -49,15 +48,15 @@ def initialize_data_path():
     DATA.mkdir(parents= True, exist_ok= True)
     return DATA
 
-
-#TO USE THIS API you must have a .kaggle folder in your 'C:\NAME' directory -> then paste the kaggle.json authenticator
-
 def get_kaggle_data(DATA = Path):
     """
     Function that uses Kaggle API to download all datasets hosted by Kaggle
 
     Params:
         DATA : Path object that points to the 'training data' folder
+
+    Returns:
+        Nothing
     """
     try:
         api = KaggleApi()
@@ -69,18 +68,27 @@ def get_kaggle_data(DATA = Path):
     except Exception as e:
         print(f"Error when running get_kaggle_data: {e}")
 
+#TO USE THIS API you must have a .kaggle folder in your 'C:\NAME' directory -> then paste the kaggle.json authenticator
 def retrieve_training_csv(DATA = Path): 
     """ 
     Function that returns all the csv files in the training data folder as a dataframe object 
     
     Params:
         DATA : Path object that points to the 'training data' folder
+    
+    Returns:
+        List : dataframe objects list of the kaggle csvs
+        Index 0 : Accepted Loans Df
+        Index 1 : Rejected Loans Df
     """ 
+    #Get kaggle data into your directory
+    get_kaggle_data(DATA)
+    
     csv_list = list(DATA.glob("**/*.csv")) 
     return_list = [] 
     #print(csv_list)
     try:
-        #traverse each item inthe data path, and if a file ending in .csv is found, turn it into a df and append to return list 
+        #traverse each item in the data path, and if a file ending in .csv is found, turn it into a df and append to return list 
         for item in csv_list: 
             if os.path.isfile(item): 
                 print(f"{item} is a file") 
@@ -134,10 +142,37 @@ def delete_large_files(DATA = Path):
             if paths.suffix == ".gz":
                 os.remove(paths)
                 #print(paths)
-
-def accepted_loans_df(dataframe_list = list, sample_csv = True, seed = 0):
+        
+def remove_outliers(df = pd.DataFrame(), rejected = False):
     """
-    Returns a cleaned up dataframe of Accepted_Loans with relevant columns for model training
+    Helper to remove any outlier data in dataframes
+    """
+
+    try:
+        if rejected is True:
+            #Remove outliers based on z score
+            column = 'Amount Requested'
+        else:
+            column = 'loan_amnt'
+
+        #Remove outliers based on z score
+        loan_std = df[column].std()
+        loan_mean = df[column].mean()
+
+        temp_z_data = df.copy()
+        temp_z_data['z_loan'] = ((df[column] - loan_mean) / loan_std)
+        threshold = 3
+
+        #remove based on threshold
+        df_no_outliers = temp_z_data[(temp_z_data['z_loan'].abs()) <= threshold].drop(columns=['z_loan'])
+
+        return df_no_outliers
+    except Exception as e:
+        print(f"Error when attempting to remove outliers: {e}")
+
+def kaggle_accepted_loans_df(dataframe_list = list, sample_csv = True, seed = 0):
+    """
+    Returns a cleaned up dataframe of Kaggle -> Accepted_Loans with relevant columns for model training
     Params:
         dataframe_list : list containing dataframe objects of all the csv files in the "training_data" folder
         sample_csv (True as default) : True returns a small sample size with a random seed to replicate results. If False is passed the entire cleaned df is returned (2 million entries)
@@ -179,21 +214,40 @@ def accepted_loans_df(dataframe_list = list, sample_csv = True, seed = 0):
         for rows in num_cols:
             cleaned_accepted_loans.loc[:, rows] = cleaned_accepted_loans[rows].fillna(cleaned_accepted_loans[rows].median())
 
+        finalized_accepted_df = remove_outliers(cleaned_accepted_loans)
+        
         #Get a sample of the cleaned up df
         if sample_csv:
-            sampled_accepted_loans = cleaned_accepted_loans.sample(200000, random_state = seed)
-            return sampled_accepted_loans
+            return finalized_accepted_df.sample(200000, random_state = seed)
         else:
             print(f"Returning sample dataframe with random_seed: {sample_csv}")
-            print("sample was manually set to false, the entire csv will be returned (large dataframe)")
-            return cleaned_accepted_loans
+            return finalized_accepted_df
     except Exception as e:
-        print("Error in accepted_loans_df: {e}")
+        print(f"Error in kaggle_accepted_loans_df: {e}")
         return
-    
-def rejected_loans_df(dataframe_list = list, sample_csv = True, seed = 0):
+
+def word_map(text):
     """
-    Returns a cleaned up dataframe of Rejected_Loans with relevant columns for model training
+    Function to normalize the loan reason column in rejected dataframe
+    """
+    if pd.isna(text): text = '' 
+
+    if any (word in text for word in ['debt', 'consol']):
+        return 'debt_consolidation'
+    if any (word in text for word in ['cc', 'credit card']):
+        return 'credit_card'
+    if any (word in text for word in ['construction', 'remodeling', 'drywall']):
+        return 'home_improvement'
+    if any (word in text for word in ['major purchase', 'big buy']):
+        return 'major_purchase'
+    if any (word in text for word in ['medical', 'hospital', 'health', 'medical bill']):
+        return 'medical' 
+    
+    return 'other'
+
+def kaggle_rejected_loans_df(dataframe_list = list, sample_csv = True, seed = 0):
+    """
+    Returns a cleaned up dataframe of Kaggle -> Rejected_Loans with relevant columns for model training
     Params:
         dataframe_list : list containing dataframe objects of all the csv files in the "training_data" folder
         sample_csv (True as default) : True returns a small sample size with a random seed to replicate results. If False is passed the entire cleaned df is returned (2 million entries)
@@ -208,30 +262,48 @@ def rejected_loans_df(dataframe_list = list, sample_csv = True, seed = 0):
     try:
         #Create a copy of the rejected loans df
         raw_rejected_loans = dataframe_list[1].copy()
+
+        #Fix any negative DTI
+        raw_rejected_loans['Debt-To-Income Ratio'] = raw_rejected_loans['Debt-To-Income Ratio'].str.replace('%', '')
+        raw_rejected_loans['Debt-To-Income Ratio'] = raw_rejected_loans['Debt-To-Income Ratio'].astype('float64')
+
+        raw_rejected_loans.loc[raw_rejected_loans['Debt-To-Income Ratio'] < 0, 'Debt-To-Income Ratio'] = raw_rejected_loans['Debt-To-Income Ratio'].mean()
+
+        #Standardize the Loan Title data
+        raw_rejected_loans['Loan Title'] = (
+            raw_rejected_loans['Loan Title'].astype('string').str.lower().str.strip()
+            .str.replace(r'[^a-z\s]', ' ', regex = True)
+            .str.replace(r'\s+', ' ', regex = True)
+        )
+
+        raw_rejected_loans['Loan Title'] = raw_rejected_loans['Loan Title'].apply(word_map)
         
         #Drop unneeded columns 
         cleaned_rejected_loans = raw_rejected_loans.drop(columns=['Risk_Score', 'Zip Code', 'State', 'Policy Code', 'Employment Length'])
         rl_cols = list(cleaned_rejected_loans.columns)
-
+        
         #Fix any missing values in the rejection loans
         for rows in rl_cols:
             #fix the rows that are of float type
             if cleaned_rejected_loans[rows].dtypes == 'float64':
-                print(f"replacing {rows} with median float")
+                #print(f"replacing {rows} with median float")
                 cleaned_rejected_loans.loc[:, rows] = cleaned_rejected_loans[rows].fillna(cleaned_rejected_loans[rows].median())
             else:
                 #get the highest repeated string and replace N/A's with that string
-                print(f"replacing {rows} na's with most repeated string")
+                #print(f"replacing {rows} na's with most repeated string")
                 replacement_string = cleaned_rejected_loans[rows].value_counts().reset_index().at[0,rows]
                 cleaned_rejected_loans.loc[:, rows] = cleaned_rejected_loans[rows].fillna(replacement_string)
+
+        #Get a sample of the cleaned up df
+        finalized_rejected_df = remove_outliers(cleaned_rejected_loans, rejected=True)
+
         #Get a sample of the cleaned up df
         if sample_csv:
-            sampled_rejected_loans = cleaned_rejected_loans.sample(200000, random_state = seed)
-            return sampled_rejected_loans
+            return finalized_rejected_df.sample(200000, random_state = seed)
         else:
             print(f"Returning sample dataframe with random_seed: {sample_csv}")
-            print("sample was manually set to false, the entire csv will be returned (warning: large dataframe)")
-            return cleaned_rejected_loans
+            return finalized_rejected_df
     except Exception as e:
-        print("Error in rejected_loans_df: {e}")
+        print(f"Error in kaggle_rejected_loans_df: {e}")
         return
+
