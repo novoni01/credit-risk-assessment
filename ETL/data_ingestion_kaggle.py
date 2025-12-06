@@ -1,5 +1,4 @@
 import os
-import sqlite3
 from pathlib import Path
 import pandas as pd
 import shutil
@@ -37,7 +36,6 @@ def move_kaggle_json():
         else:
             print("Please download kaggle.json and make sure it is in your downloads folder")
 
-#gather data from a specific csv file and return as a pandas df
 def initialize_data_path():
     """
     Returns a path object pointing to the 'training data' folder
@@ -144,6 +142,33 @@ def delete_large_files(DATA = Path):
             if paths.suffix == ".gz":
                 os.remove(paths)
                 #print(paths)
+        
+def remove_outliers(df = pd.DataFrame(), rejected = False):
+    """
+    Helper to remove any outlier data in dataframes
+    """
+
+    try:
+        if rejected is True:
+            #Remove outliers based on z score
+            column = 'Amount Requested'
+        else:
+            column = 'loan_amnt'
+
+        #Remove outliers based on z score
+        loan_std = df[column].std()
+        loan_mean = df[column].mean()
+
+        temp_z_data = df.copy()
+        temp_z_data['z_loan'] = ((df[column] - loan_mean) / loan_std)
+        threshold = 3
+
+        #remove based on threshold
+        df_no_outliers = temp_z_data[(temp_z_data['z_loan'].abs()) <= threshold].drop(columns=['z_loan'])
+
+        return df_no_outliers
+    except Exception as e:
+        print(f"Error when attempting to remove outliers: {e}")
 
 def kaggle_accepted_loans_df(dataframe_list = list, sample_csv = True, seed = 0):
     """
@@ -189,18 +214,37 @@ def kaggle_accepted_loans_df(dataframe_list = list, sample_csv = True, seed = 0)
         for rows in num_cols:
             cleaned_accepted_loans.loc[:, rows] = cleaned_accepted_loans[rows].fillna(cleaned_accepted_loans[rows].median())
 
+        finalized_accepted_df = remove_outliers(cleaned_accepted_loans)
+        
         #Get a sample of the cleaned up df
         if sample_csv:
-            sampled_accepted_loans = cleaned_accepted_loans.sample(200000, random_state = seed)
-            return sampled_accepted_loans
+            return finalized_accepted_df.sample(200000, random_state = seed)
         else:
             print(f"Returning sample dataframe with random_seed: {sample_csv}")
-            print("sample was manually set to false, the entire csv will be returned (large dataframe)")
-            return cleaned_accepted_loans
+            return finalized_accepted_df
     except Exception as e:
         print(f"Error in kaggle_accepted_loans_df: {e}")
         return
+
+def word_map(text):
+    """
+    Function to normalize the loan reason column in rejected dataframe
+    """
+    if pd.isna(text): text = '' 
+
+    if any (word in text for word in ['debt', 'consol']):
+        return 'debt_consolidation'
+    if any (word in text for word in ['cc', 'credit card']):
+        return 'credit_card'
+    if any (word in text for word in ['construction', 'remodeling', 'drywall']):
+        return 'home_improvement'
+    if any (word in text for word in ['major purchase', 'big buy']):
+        return 'major_purchase'
+    if any (word in text for word in ['medical', 'hospital', 'health', 'medical bill']):
+        return 'medical' 
     
+    return 'other'
+
 def kaggle_rejected_loans_df(dataframe_list = list, sample_csv = True, seed = 0):
     """
     Returns a cleaned up dataframe of Kaggle -> Rejected_Loans with relevant columns for model training
@@ -218,181 +262,48 @@ def kaggle_rejected_loans_df(dataframe_list = list, sample_csv = True, seed = 0)
     try:
         #Create a copy of the rejected loans df
         raw_rejected_loans = dataframe_list[1].copy()
+
+        #Fix any negative DTI
+        raw_rejected_loans['Debt-To-Income Ratio'] = raw_rejected_loans['Debt-To-Income Ratio'].str.replace('%', '')
+        raw_rejected_loans['Debt-To-Income Ratio'] = raw_rejected_loans['Debt-To-Income Ratio'].astype('float64')
+
+        raw_rejected_loans.loc[raw_rejected_loans['Debt-To-Income Ratio'] < 0, 'Debt-To-Income Ratio'] = raw_rejected_loans['Debt-To-Income Ratio'].mean()
+
+        #Standardize the Loan Title data
+        raw_rejected_loans['Loan Title'] = (
+            raw_rejected_loans['Loan Title'].astype('string').str.lower().str.strip()
+            .str.replace(r'[^a-z\s]', ' ', regex = True)
+            .str.replace(r'\s+', ' ', regex = True)
+        )
+
+        raw_rejected_loans['Loan Title'] = raw_rejected_loans['Loan Title'].apply(word_map)
         
         #Drop unneeded columns 
         cleaned_rejected_loans = raw_rejected_loans.drop(columns=['Risk_Score', 'Zip Code', 'State', 'Policy Code', 'Employment Length'])
         rl_cols = list(cleaned_rejected_loans.columns)
-
+        
         #Fix any missing values in the rejection loans
         for rows in rl_cols:
             #fix the rows that are of float type
             if cleaned_rejected_loans[rows].dtypes == 'float64':
-                print(f"replacing {rows} with median float")
+                #print(f"replacing {rows} with median float")
                 cleaned_rejected_loans.loc[:, rows] = cleaned_rejected_loans[rows].fillna(cleaned_rejected_loans[rows].median())
             else:
                 #get the highest repeated string and replace N/A's with that string
-                print(f"replacing {rows} na's with most repeated string")
+                #print(f"replacing {rows} na's with most repeated string")
                 replacement_string = cleaned_rejected_loans[rows].value_counts().reset_index().at[0,rows]
                 cleaned_rejected_loans.loc[:, rows] = cleaned_rejected_loans[rows].fillna(replacement_string)
+
+        #Get a sample of the cleaned up df
+        finalized_rejected_df = remove_outliers(cleaned_rejected_loans, rejected=True)
+
         #Get a sample of the cleaned up df
         if sample_csv:
-            sampled_rejected_loans = cleaned_rejected_loans.sample(200000, random_state = seed)
-            return sampled_rejected_loans
+            return finalized_rejected_df.sample(200000, random_state = seed)
         else:
             print(f"Returning sample dataframe with random_seed: {sample_csv}")
-            print("sample was manually set to false, the entire csv will be returned (warning: large dataframe)")
-            return cleaned_rejected_loans
+            return finalized_rejected_df
     except Exception as e:
-        print("Error in rejected_loans_df: {e}")
+        print(f"Error in kaggle_rejected_loans_df: {e}")
         return
 
-def raw_hdma_accepted_df(DATA = Path):
-    """
-    Function that reads the parquet.gzip file to return a the raw accepted gzip as a dataframe (WARNING LARGE FILE)
-
-    Params:
-        DATA : Path object that points to the 'training data' folder
-    """
-    
-def hdma_accepted_df(DATA = Path):
-    """
-    Function that reads the parquet.gzip file to return a cleaned dataframe with only accepted loans in the US during 2023
-
-    Params:
-        DATA : Path object that points to the 'training data' folder
-    """
-    try:
-        hdma_accepted_parquet = DATA / 'hdma_accepted_raw.parquet.gzip'
-        temp_num_cols = [
-        'activity_year', 'action_taken', 'preapproval', 'loan_purpose', 'loan_amount', 'loan_to_value_ratio',
-        'interest_rate', 'total_loan_costs', 'loan_term', 'income', 'debt_to_income_ratio'
-        ]
-        temp_text_cols = [
-            'derived_loan_product_type', 'applicant_credit_score_type', 'co-applicant_credit_score_type',
-            'denial_reason-1', 'denial_reason-2', 'denial_reason-3', 'denial_reason-4'
-            ]
-        accepted_recovered = pd.read_parquet(hdma_accepted_parquet, columns=temp_num_cols + temp_text_cols)
-        return accepted_recovered
-    except Exception as e:
-        print(f"Error when retrieving hdma_accepted_df: {e}")
-
-
-def clean_data(df = pd.DataFrame()): 
-    """
-    Helper function made to clean the HDMA dataframes
-    """
-
-    int_values = [
-        'activity_year', 'action_taken', 'preapproval', 'loan_purpose', 'loan_amount', 'loan_term', 'applicant_credit_score_type',
-        'co-applicant_credit_score_type', 'denial_reason-1'
-    ]
-
-    float_values = [
-        'loan_to_value_ratio', 'income', 'debt_to_income_ratio'
-    ]
-
-    string_values = [
-        'derived_loan_product_type'
-    ]
-    #Convert any ranges in the debt_income cat into the middle of that range, or leave it at that range if its too broad
-    df['debt_to_income_ratio'] = df['debt_to_income_ratio'].replace(">60%", 60)
-    df['debt_to_income_ratio'] = df['debt_to_income_ratio'].replace("50%-60%", 55)
-    df['debt_to_income_ratio'] = df['debt_to_income_ratio'].replace("20%-<30%", (29+20)/2)
-    df['debt_to_income_ratio'] = df['debt_to_income_ratio'].replace("30%-<36%", (35+30)/2)
-    df['debt_to_income_ratio'] = df['debt_to_income_ratio'].replace("<20%", 20)
-    
-    #Fix any exempts
-    df['debt_to_income_ratio'] = df['debt_to_income_ratio'].replace('Exempt', df['debt_to_income_ratio'].value_counts().reset_index().iat[0, 0])
-
-    #Fix the income values
-    df['income'] = df['income'].replace('Exempt', df['income'].value_counts().reset_index().iat[0, 0])
-
-    #Fix the loan term
-    df['loan_term'] = df['loan_term'].replace('Exempt', df['loan_term'].value_counts().reset_index().iat[0, 0])
-    
-    #fix any rows that have exempt
-    df['loan_to_value_ratio'] = df['loan_to_value_ratio'].replace('Exempt', df['loan_to_value_ratio'].value_counts().reset_index().iat[0, 0])
-
-    #Convert all columns to numerical types
-    for column in int_values:
-        df[column] = df[column].fillna(df[column].value_counts().reset_index().iat[0, 0])
-        try:
-            df[column] = df[column].astype('int32')
-        except Exception as e:
-            print(f"skipping int conversion: {column} due to error: {e}") 
-            continue  
-        
-
-    for column in float_values:
-        df[column] = df[column].fillna(df[column].value_counts().reset_index().iat[0, 0])   
-        try:
-            df[column] = df[column].astype('float64')
-        except Exception as e:
-            print(f"skipping float conversion: {column} due to error: {e}") 
-            continue
-
-    for column in string_values:
-        df[column] = df[column].fillna(df[column].value_counts().reset_index().iat[0, 0])
-
-    #Remove outliers based on z score
-    loan_std = df['loan_amount'].std()
-    loan_mean = df['loan_amount'].mean()
-    temp_z_data = df.copy()
-    temp_z_data['z_loan'] = ((df['loan_amount'] - loan_mean) / loan_std)
-    threshold = 3
-
-    #remove based on threshold
-    df_no_outliers = temp_z_data[(temp_z_data['z_loan'].abs()) <= threshold].drop(columns=['z_loan'])
-    return df_no_outliers
-
-def read_hdma(file = Path):
-    """
-    Helper function that retrieves specific data from the gzip files
-    Params:
-        DATA : Path object that points to the 'training data' folder
-    """
-    temp_num_cols = [
-        'activity_year', 'action_taken', 'preapproval', 'loan_purpose', 'loan_amount', 'loan_term', 'loan_to_value_ratio',
-        'income', 'debt_to_income_ratio'
-        ]
-    temp_text_cols = [
-        'derived_loan_product_type', 'applicant_credit_score_type', 'co-applicant_credit_score_type', 'denial_reason-1'
-    ]
-    try:
-        df_recovered = pd.read_parquet(file, columns=temp_num_cols + temp_text_cols)
-        return df_recovered
-    except:
-        print(f"Error when attempting to retrive {file} using specific columns function")
-
-def clean_hdma_rejected(DATA = Path):
-    """
-    Function that reads the parquet.gzip file to return a cleaned dataframe with only rejected loans in the US during 2023
-    https://ffiec.cfpb.gov/documentation/publications/loan-level-datasets/lar-data-fields#loan_amount
-    The link above provides details in regards to each column
-    Params:
-        DATA : Path object that points to the 'training data' folder
-    """
-    try:
-        hdma_rejected_parquet = DATA / 'hdma_rejected_raw.parquet.gzip'
-        
-        rejected_df = read_hdma(hdma_rejected_parquet)
-        rejected_cleaned = clean_data(rejected_df)
-        return rejected_cleaned
-    except Exception as e:
-        print(f"Error when retrieving rejected HDMA as a df: {e}")
-
-def clean_hdma_accepted(DATA = Path):
-    """
-    Function that reads the parquet.gzip file to return a cleaned dataframe with only rejected loans in the US during 2023
-    https://ffiec.cfpb.gov/documentation/publications/loan-level-datasets/lar-data-fields#loan_amount
-    The link above provides details in regards to each column
-    Params:
-        DATA : Path object that points to the 'training data' folder
-    """
-    try:
-        hdma_accepted_parquet = DATA / 'hdma_accepted_raw.parquet.gzip'
-        accepted_df = read_hdma(hdma_accepted_parquet)
-        accepted_cleaned = clean_data(accepted_df)
-        return accepted_cleaned
-    except Exception as e:
-        print(f"Error when retrieving accepted HDMA as a df: {e}")
