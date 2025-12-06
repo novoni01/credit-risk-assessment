@@ -33,9 +33,9 @@ CREATE TABLE Borrowers (
     home_ownership                  TEXT,
     verification_status             TEXT,
 
-    -- HDMA borrower fields (NEW)
+    -- hdma
     income                          NUMERIC(14,2),
-    debt_to_income_ratio            NUMERIC(6,2),
+    debt_to_income_ratio            NUMERIC(6,2), --- range 
     applicant_credit_score_type     TEXT,
     co_applicant_credit_score_type  TEXT,
 
@@ -59,7 +59,7 @@ CREATE TABLE Accepted_Loans (
     purpose                         VARCHAR(50),
     application_type                VARCHAR(30),
 
-    -- HDMA-specific fields (NEW)
+    -- hdma
     activity_year                   SMALLINT,
     action_taken                    SMALLINT,     
     preapproval                     SMALLINT,
@@ -78,9 +78,9 @@ CREATE TABLE Rejected (
     dataset_source                  TEXT, -- track which dataset the info is coming from / might delete this field later idk
 
     -- kaggle
-    amount_requested                NUMERIC(12, 2), -- map to "Amount Requested"
-    application_date                DATE, -- map to "Application Date"
-    loan_title                      TEXT, -- map to "Loan Title"
+    amount_requested                NUMERIC(12, 2), -- map to "Amount Requested" in kaggle
+    application_date                DATE, -- map to "Application Date" in kaggle
+    loan_title                      TEXT, -- map to "Loan Title" in kaggle
     dti                             NUMERIC(6, 2), -- map to "Debt-To-Income Ratio" from both kaggle and hdma
 
     -- hdma rejected
@@ -95,7 +95,7 @@ CREATE TABLE Rejected (
     derived_loan_product_type       TEXT,            
     applicant_credit_score_type     TEXT,     
     co_applicant_credit_score_type  TEXT,
-    denial_reason_1                 TEXT, 
+    denial_reason_1                 TEXT, -- mapping to "denial_reason-1"
 
     created_at                      TIMESTAMPTZ DEFAULT now()
 );
