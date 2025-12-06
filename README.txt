@@ -17,5 +17,8 @@ CRA.ipynb
     The notebook is used to sketch out ideas, see what works and what doesn't. All finalized code will be put in the cra_functions.py module for easy
     imports. This way all the code can be imported into other files and ran with ease. 
 
-data_ingestion_kaggle.py
+data_ingestion_kaggle.py (Specific functions for Kaggle data)
     Module containing finalized functions to bring our project to life. Each project has a short description with how it works and the parameters required
+
+data_ingestion_hdma.py (Specific functions for HDMA data)
+    Module containing finalized functions to bring our project to life. Each project has a short description with how it works and the parameters required. 
