@@ -10,7 +10,7 @@ import random
 def initialize_data_path():
     """
     Returns a path object pointing to the 'training data' folder
-
+ 
     If no folder exists, it will make one
     """
     BASE = Path.cwd()

@@ -19,3 +19,12 @@ CRA.ipynb
 
 data_ingestion_kaggle.py
     Module containing finalized functions to bring our project to life. Each project has a short description with how it works and the parameters required
+
+database.sql
+    details core tables and postgresql schema
+
+staging.sql
+    has 1 staging table per dataset (total 4) to temporarily hold cleaned data before being inserted into the normalized database schema
+
+mapping.py
+    reads the staging tables, renames columns to match the normalized database schema, and inserts into normalized database schema
