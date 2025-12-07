@@ -7,6 +7,8 @@
 -- \dt -- list all tables
 -- \d borrowers -- peek inside borrowers table
 
+-- psql -d credit_risk -f database/database.sql
+
 DROP INDEX IF EXISTS idx_accepted_loans_borrower;
 DROP INDEX IF EXISTS idx_accepted_loans_status;
 
@@ -51,7 +53,7 @@ CREATE TABLE Accepted_Loans (
     -- kaggle - num
     loan_amnt                       NUMERIC(12, 2) NOT NULL, -- map loan_amount from hdma accepted
     funded_amnt                     NUMERIC(12, 2),
-    term_months                     SMALLINT NOT NULL, -- from kaggle "term" -- map loan_term from hdma accepted
+    term_months                     SMALLINT NOT NULL, -- map loan_term from hdma accepted
     int_rate                        NUMERIC(5, 2), -- map interest_rate from hdma accepted
     installment                     NUMERIC(12, 2),
     -- kaggle - cat

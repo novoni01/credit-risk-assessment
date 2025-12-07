@@ -7,7 +7,7 @@ CREATE TABLE staging_accepted_kaggle (
     id                              INTEGER,      
     loan_amnt                       NUMERIC(12, 2),
     funded_amnt                     NUMERIC(12, 2),
-    term                            TEXT,         
+    term_months                     TEXT,         
     int_rate                        NUMERIC(5, 2), 
     installment                     NUMERIC(12, 2),
     annual_inc                      NUMERIC(14, 2),

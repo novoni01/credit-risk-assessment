@@ -26,5 +26,5 @@ database.sql
 staging.sql
     has 1 staging table per dataset (total 4) to temporarily hold cleaned data before being inserted into the normalized database schema
 
-mapping.py
+transformation folder
     reads the staging tables, renames columns to match the normalized database schema, and inserts into normalized database schema
