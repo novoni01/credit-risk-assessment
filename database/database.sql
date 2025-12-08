@@ -9,9 +9,6 @@
 
 -- psql -d credit_risk -f database/database.sql
 
-DROP INDEX IF EXISTS idx_accepted_loans_borrower;
-DROP INDEX IF EXISTS idx_accepted_loans_status;
-
 DROP TABLE IF EXISTS Borrowers CASCADE;
 DROP TABLE IF EXISTS Accepted_Loans CASCADE;
 DROP TABLE IF EXISTS Rejected CASCADE;
@@ -103,7 +100,3 @@ CREATE TABLE Rejected (
 );
 
 -- ml table?
-
--- indexing
-CREATE INDEX idx_accepted_loans_borrower ON Accepted_Loans (borrower_id);
-CREATE INDEX idx_accepted_loans_status ON Accepted_Loans (loan_status);
