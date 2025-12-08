@@ -20,12 +20,6 @@ CRA.ipynb
 data_ingestion_kaggle.py
     Module containing finalized functions to bring our project to life. Each project has a short description with how it works and the parameters required
 
-database.sql
-    details core tables and postgresql schema
-
-staging.sql
-    has 1 staging table per dataset (total 4) to temporarily hold cleaned data before being inserted into the normalized database schema
-
 TO SETUP DATABASE (locally)
     In your terminal root folder:
         1. psql -d postgres
@@ -49,5 +43,12 @@ TO SETUP DATABASE (locally)
                     SELECT 'staging_rejected_hdma', COUNT(*) FROM staging_rejected_hdma;
                     SELECT 'staging_rejected_kaggle', COUNT(*) FROM staging_rejected_kaggle;
         5. mapping and loading into normalized schema
-            python -m ETL.transformation.transf_loader
+            python -m ETL.transformation.transf_loader -- run ONCE!!
+            sanity check:
+                psql -d credit_risk
+                (in psql)
+                    SELECT COUNT(*) FROM borrowers; -- should be 266723
+                    SELECT COUNT(*) FROM accepted_loans; -- should be 400000
+                    SELECT COUNT(*) FROM rejected; -- should be 400000
+
 
