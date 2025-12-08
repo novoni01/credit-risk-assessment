@@ -1,3 +1,8 @@
+-- psql -d credit_risk -f database/staging.sql
+
+-- psql -d credit_risk
+-- \dt
+
 DROP TABLE IF EXISTS staging_accepted_kaggle CASCADE;
 DROP TABLE IF EXISTS staging_rejected_kaggle CASCADE;
 DROP TABLE IF EXISTS staging_accepted_hdma CASCADE;

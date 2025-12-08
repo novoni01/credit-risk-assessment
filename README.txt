@@ -26,5 +26,28 @@ database.sql
 staging.sql
     has 1 staging table per dataset (total 4) to temporarily hold cleaned data before being inserted into the normalized database schema
 
-transformation folder
-    reads the staging tables, renames columns to match the normalized database schema, and inserts into normalized database schema
+TO SETUP DATABASE (locally)
+    In your terminal root folder:
+        1. psql -d postgres
+            (in psql) CREATE DATABASE credit_risk;
+            (in psql) \l -- to verify u created it
+            (in psql) \q -- to exit
+        2. psql -d credit_risk -f database/database.sql
+        3. psql -d credit_risk -f database/staging.sql
+            sanity check: 
+                psql -d credit_risk
+                (in psql) \dt -- should show the tables have all been loaded (total 7)
+                (in psql) \q
+        4. populate staging tables 
+            python -m ETL.transformation.staging_loader -- run ONCE!!!
+            sanity check:
+                psql -d credit_risk
+                -- check that the count of rows for each of the staging table is 200000, if its more then you loaded twice by accident and need to delete tables and redo
+                (in psql)
+                    SELECT 'staging_accepted_hdma' AS table, COUNT(*) FROM staging_accepted_hdma;
+                    SELECT 'staging_accepted_kaggle', COUNT(*) FROM staging_accepted_kaggle;
+                    SELECT 'staging_rejected_hdma', COUNT(*) FROM staging_rejected_hdma;
+                    SELECT 'staging_rejected_kaggle', COUNT(*) FROM staging_rejected_kaggle;
+        5. mapping and loading into normalized schema
+            python -m ETL.transformation.transf_loader
+

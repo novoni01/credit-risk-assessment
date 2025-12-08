@@ -18,7 +18,7 @@ DROP TABLE IF EXISTS Rejected CASCADE;
 
 -- customers table
 CREATE TABLE Borrowers (
-    borrower_id                     BIGSERIAL PRIMARY KEY,
+    borrower_id                     BIGSERIAL PRIMARY KEY, -- auto gen
 
     -- kaggle
     annual_inc                      NUMERIC(14, 2),
@@ -75,7 +75,7 @@ CREATE TABLE Accepted_Loans (
 
 -- rejected table for lendingclub 
 CREATE TABLE Rejected ( 
-    application_id                  BIGSERIAL PRIMARY KEY,
+    application_id                  BIGSERIAL PRIMARY KEY, -- auto gen
 
     dataset_source                  TEXT, -- track which dataset the info is coming from / might delete this field later idk
 
@@ -96,8 +96,8 @@ CREATE TABLE Rejected (
     income                          NUMERIC(14, 2),  
     derived_loan_product_type       TEXT,            
     applicant_credit_score_type     TEXT,     
-    co_applicant_credit_score_type  TEXT, -- mapping to co-applicant_credit_score_typ in hdma rejected
-    denial_reason_1                 TEXT, -- mapping to "denial_reason-1" in hdma rejected
+    co_applicant_credit_score_type  TEXT, 
+    denial_reason_1                 TEXT, 
 
     created_at                      TIMESTAMPTZ DEFAULT now()
 );

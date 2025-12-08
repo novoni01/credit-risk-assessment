@@ -1,4 +1,5 @@
 #populate staging tables
+# python -m ETL.transformation.staging_loader (run ONCE)
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
