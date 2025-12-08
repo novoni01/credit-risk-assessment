@@ -63,13 +63,18 @@ def load_hdma_staging(sample: bool = True,seed: int = 0,engine: Optional[Engine]
     print(f"[staging_loader] HDMA accepted rows: {len(accepted_df)}")
     print(f"[staging_loader] HDMA rejected rows: {len(rejected_df)}")
 
-    accepted_cols = ["loan_amount","loan_term","interest_rate","income","debt_to_income_ratio","applicant_credit_score_type","co-applicant_credit_score_type","activity_year","action_taken","preapproval","loan_to_value_ratio","total_loan_costs","derived_loan_product_type","loan_purpose",]
+    accepted_cols = ['activity_year', 'action_taken', 'preapproval', 'loan_purpose', 'loan_amount', 'loan_term', 'applicant_credit_score_type',
+        'co_applicant_credit_score_type' , 'loan_to_value_ratio', 'income', 'debt_to_income_ratio',
+        'derived_loan_product_type',]
     accepted_stage = accepted_df[accepted_cols].copy()
     inserted_acc = write_df_to_table(engine,accepted_stage,table_name="staging_accepted_hdma",if_exists="append",chunksize=5000,)
     print(f"[staging_loader] Inserted {inserted_acc} rows inside staging_accepted_hdma")
 
-    rejected_cols = ["activity_year","action_taken","preapproval","loan_purpose","loan_amount","loan_term","loan_to_value_ratio","income","debt_to_income_ratio","derived_loan_product_type","applicant_credit_score_type","co-applicant_credit_score_type","denial_reason-1",]
+    rejected_cols = ["activity_year","action_taken","preapproval","loan_purpose","loan_amount","loan_term","loan_to_value_ratio","income","debt_to_income_ratio","derived_loan_product_type","applicant_credit_score_type","co_applicant_credit_score_type","denial_reason_1",]
     rejected_stage = rejected_df[rejected_cols].copy()
+
+    # print(rejected_stage.dtypes)
+    # print(rejected_stage[['loan_amount',loan_term','loan_to_value_ratio','income','debt_to_income_ratio']].describe())
 
     inserted_rejec = write_df_to_table(engine,rejected_stage,table_name="staging_rejected_hdma",if_exists="append",chunksize=5000,)
     print(f"[staging_loader] Inserted {inserted_rejec} rows inside staging_rejected_hdma")

@@ -92,12 +92,12 @@ CREATE TABLE Rejected (
     loan_purpose                    TEXT,    
     loan_amount                     NUMERIC(12, 2),
     loan_term                       SMALLINT,  
-    loan_to_value_ratio             NUMERIC(5, 2),  
+    loan_to_value_ratio             NUMERIC(10,2),
     income                          NUMERIC(14, 2),  
     derived_loan_product_type       TEXT,            
     applicant_credit_score_type     TEXT,     
-    co_applicant_credit_score_type  TEXT,
-    denial_reason_1                 TEXT, -- mapping to "denial_reason-1"
+    co_applicant_credit_score_type  TEXT, -- mapping to co-applicant_credit_score_typ in hdma rejected
+    denial_reason_1                 TEXT, -- mapping to "denial_reason-1" in hdma rejected
 
     created_at                      TIMESTAMPTZ DEFAULT now()
 );

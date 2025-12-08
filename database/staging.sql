@@ -44,7 +44,7 @@ CREATE TABLE staging_accepted_hdma (
     income                          NUMERIC(14, 2),
     debt_to_income_ratio            TEXT,         
     applicant_credit_score_type     TEXT,
-    "co-applicant_credit_score_type"  TEXT,
+    co_applicant_credit_score_type  TEXT,
 
     activity_year                   SMALLINT,
     action_taken                    SMALLINT,
@@ -62,11 +62,11 @@ CREATE TABLE staging_rejected_hdma (
     loan_purpose                    TEXT,
     loan_amount                     NUMERIC(12, 2),
     loan_term                       SMALLINT,
-    loan_to_value_ratio             NUMERIC(5, 2),
+    loan_to_value_ratio             NUMERIC(10,2),
     income                          NUMERIC(14, 2),
     debt_to_income_ratio            TEXT,        
     derived_loan_product_type       TEXT,
     applicant_credit_score_type     TEXT,
-    "co-applicant_credit_score_type" TEXT,
-    "denial_reason-1"               TEXT
+    co_applicant_credit_score_type TEXT,
+    denial_reason_1                 TEXT
 );
