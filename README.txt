@@ -27,6 +27,7 @@ TO SETUP DATABASE (locally)
             (in psql) \l -- to verify u created it
             (in psql) \q -- to exit
         2. psql -d credit_risk -f database/database.sql
+        2.5. psql -d credit_risk -f database/indexing.sql
         3. psql -d credit_risk -f database/staging.sql
             sanity check: 
                 psql -d credit_risk
