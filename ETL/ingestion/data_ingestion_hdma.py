@@ -26,7 +26,7 @@ def clean_data(df = pd.DataFrame(), sample = bool, seed = int):
 
     int_values = [
         'activity_year', 'action_taken', 'preapproval', 'loan_purpose', 'loan_amount', 'loan_term', 'applicant_credit_score_type',
-        'co-applicant_credit_score_type' , 'denial_reason-1'
+        'co_applicant_credit_score_type' , 'denial_reason_1'
     ]
 
     float_values = [
@@ -44,7 +44,8 @@ def clean_data(df = pd.DataFrame(), sample = bool, seed = int):
     df['debt_to_income_ratio'] = df['debt_to_income_ratio'].replace("<20%", 20)
     
     #Fix the 1111's in denial reason
-    df['denial_reason-1'] = df['denial_reason-1'].replace(1111, 1)
+    if "denial_reason_1" in df.columns:
+        df["denial_reason_1"] = df["denial_reason_1"].replace(1111, 1)
 
     #Fix any exempts
     exempt_cols = ['debt_to_income_ratio', 'income', 'loan_term', 'loan_to_value_ratio']
@@ -107,14 +108,45 @@ def read_hdma(file = Path):
     filtered_columns = [
         'activity_year', 'action_taken', 'preapproval', 'loan_purpose', 'loan_amount', 'loan_term', 'applicant_credit_score_type',
         'co-applicant_credit_score_type' , 'denial_reason-1', 'loan_to_value_ratio', 'income', 'debt_to_income_ratio',
-        'derived_loan_product_type' 
+        'derived_loan_product_'
+        'type' 
     ]
 
-    try:
-        df_recovered = pd.read_parquet(file, columns=filtered_columns)
-        return df_recovered
-    except:
-        print(f"Error when attempting to retrive {file} using specific columns function")
+    if not file.exists():
+        raise FileNotFoundError(f"HDMA file not found: {file}")
+    
+    df = pd.read_parquet(file)
+
+    #checks whats missing
+    missing = [c for c in filtered_columns if c not in df.columns]
+    if missing:
+        print(f"[read_hdma] missing columns in {file.name}: {missing}")
+    present_cols = [c for c in filtered_columns if c in df.columns]
+
+    if not present_cols:
+        raise ValueError(
+            f"[read_hdma] no HDMA columns found in {file.name}. "
+            f"Available columns: {list(df.columns)[:20]} ..."
+        )
+    
+    df_recovered = df[present_cols].copy()
+
+    for col in missing:
+        df_recovered[col] = pd.NA
+
+    # problematic names
+    renamer = {}
+
+    if "denial_reason-1" in df_recovered.columns:
+        renamer["denial_reason-1"] = "denial_reason_1"
+
+    if "co-applicant_credit_score_type" in df_recovered.columns:
+        renamer["co-applicant_credit_score_type"] = "co_applicant_credit_score_type"
+
+    if renamer:
+        df_recovered.rename(columns=renamer, inplace=True)
+
+    return df_recovered
 
 def clean_hdma_rejected(DATA = Path, sample = True, seed = 0):
     """
@@ -147,6 +179,6 @@ def clean_hdma_accepted(DATA = Path, sample = True, seed = 0):
         hdma_accepted_parquet = DATA / 'hdma_accepted_raw.parquet.gzip'
         accepted_df = read_hdma(hdma_accepted_parquet)
         accepted_cleaned = clean_data(accepted_df, sample, seed)
-        return accepted_cleaned.drop(columns=['denial_reason-1'])
+        return accepted_cleaned.drop(columns=['denial_reason_1'])
     except Exception as e:
         print(f"Error when retrieving accepted HDMA as a df: {e}")

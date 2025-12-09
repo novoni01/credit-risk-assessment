@@ -85,24 +85,49 @@ def retrieve_training_csv(DATA = Path):
     get_kaggle_data(DATA)
     
     csv_list = list(DATA.glob("**/*.csv")) 
-    return_list = [] 
-    #print(csv_list)
-    try:
-        #traverse each item in the data path, and if a file ending in .csv is found, turn it into a df and append to return list 
-        for item in csv_list: 
-            if os.path.isfile(item): 
-                print(f"{item} is a file") 
-                return_list.append(pd.read_csv(item, low_memory = False)) 
-            else: 
-                print(f"{item} is folder or dir")
+    accepted_df = None
+    rejected_df = None
 
-        if return_list: 
-            return return_list 
-        else: 
-            print(f"No csv files found in {DATA}") 
-            return []
-    except Exception as e:
-        print(f"Error when using retrieve_training_csv: {e}")
+    # pick accepted vs rejected based on file name
+    for item in csv_list:
+        if os.path.isfile(item):
+            name_lower = item.name.lower()
+            if "accepted" in name_lower:
+                print(f"{item} is the accepted file")
+                accepted_df = pd.read_csv(item, low_memory=False)
+            elif "rejected" in name_lower:
+                print(f"{item} is the rejected file")
+                rejected_df = pd.read_csv(item, low_memory=False)
+            else:
+                print(f"{item} will be ignored")
+        else:
+            print(f"{item} is folder")
+
+    if accepted_df is None or rejected_df is None:
+        print(f"no valid files found in {DATA}")
+        return []
+
+    return [accepted_df, rejected_df]
+
+    # old code causing errors!!
+    #return_list = [] 
+    #print(csv_list)
+    # try:
+    #     #traverse each item in the data path, and if a file ending in .csv is found, turn it into a df and append to return list 
+    #     for item in csv_list: 
+    #         if os.path.isfile(item): 
+    #             print(f"{item} is a file") 
+    #             return_list.append(pd.read_csv(item, low_memory = False)) 
+    #         else: 
+    #             print(f"{item} is folder or dir")
+
+    #     if return_list: 
+    #         return return_list 
+    #     else: 
+    #         print(f"No csv files found in {DATA}") 
+    #         return []
+    # except Exception as e:
+    #     print(f"Error when using retrieve_training_csv: {e}")
 
 def get_dir_size(path): 
     """ Get directory size in MBs """ 

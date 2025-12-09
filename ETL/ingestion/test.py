@@ -1,4 +1,4 @@
-import data_ingestion_kaggle
+import ETL.ingestion.data_ingestion_kaggle as data_ingestion_kaggle
 import time
 
 def testing_all_functions():
