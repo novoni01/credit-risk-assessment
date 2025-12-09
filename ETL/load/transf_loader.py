@@ -1,11 +1,11 @@
-#python -m ETL.transformation.transf_loader
+#python -m ETL.load.transf_loader
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 
-from ETL.transformation.mapping.borrowers_map import map_all_borrowers
-from ETL.transformation.mapping.accepted_loans_map import map_all_accepted_loans
-from ETL.transformation.mapping.rejected_map import map_all_rejected_loans
+from ETL.load.mapping.borrowers_map import map_all_borrowers
+from ETL.load.mapping.accepted_loans_map import map_all_accepted_loans
+from ETL.load.mapping.rejected_map import map_all_rejected_loans
 
 def run_transf_loader(engine: Engine | None = None) -> None:
     if engine is None:

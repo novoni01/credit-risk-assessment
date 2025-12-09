@@ -32,7 +32,7 @@ def map_borrowers_from_kaggle_accepted(engine: Engine) -> None:
             sa.pub_rec_bankruptcies,
             sa.home_ownership,
             sa.verification_status
-        FROM staging_accepted_kaggle sa
+        FROM valid_accepted_kaggle sa
     """)
 
     with engine.begin() as conn:
@@ -52,7 +52,7 @@ def map_borrowers_from_hdma_accepted(engine: Engine) -> None:
             NULLIF(REGEXP_REPLACE(sh.debt_to_income_ratio, '[^0-9\\.]', '', 'g'),'')::NUMERIC,
             sh.applicant_credit_score_type,
             sh.co_applicant_credit_score_type
-        FROM staging_accepted_hdma sh;
+        FROM valid_accepted_hdma sh;
     """)
 
     with engine.begin() as conn:
