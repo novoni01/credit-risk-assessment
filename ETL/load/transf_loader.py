@@ -1,4 +1,4 @@
-#python -m ETL.transformation.transf_loader
+#python -m ETL.load.transf_loader
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine

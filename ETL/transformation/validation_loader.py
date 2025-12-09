@@ -246,3 +246,40 @@ def create_valid_rejected_hdma(engine: Engine) -> None:
         AND co_applicant_credit_score_type IN ('1','2','3','4','5','6','7','8','9','10','1111')
         AND denial_reason_1 IN ('1','2','3','4','5','6','7','8','9','10');
     """)
+
+    with engine.begin() as conn:
+        conn.execute(sql)
+
+def confirm_lengths(engine: Engine) -> None:
+    queries = {
+        "valid_accepted_hdma": "SELECT COUNT(*) FROM valid_accepted_hdma",
+        "valid_accepted_kaggle": "SELECT COUNT(*) FROM valid_accepted_kaggle",
+        "valid_rejected_hdma": "SELECT COUNT(*) FROM valid_rejected_hdma",
+        "valid_rejected_kaggle": "SELECT COUNT(*) FROM valid_rejected_kaggle",
+    }
+
+    with engine.connect() as conn:
+        for name, query in queries.items():
+            result = conn.execute(text(query)).scalar()
+            print(f"{name} size -> {result}")
+
+if __name__ == "__main__":
+    engine = create_engine("postgresql+psycopg2:///credit_risk")
+    try:
+        print("=== Loading VALID Kaggle accepted table ===")
+        create_valid_accepted_kaggle(engine)
+
+        print("=== Loading VALID Kaggle rejected table ===")
+        create_valid_rejected_kaggle(engine)
+
+        print("=== Loading VALID HDMA accepted table ===")
+        create_valid_accepted_hdma(engine)
+
+        print("=== Loading VALID HDMA rejected table ===")
+        create_valid_rejected_hdma(engine)
+
+        print("=== ALL VALID TABLES WERE LOADED ===")
+        confirm_lengths(engine)
+    
+    except Exception as e:
+        print(f"Error when trying to validate data: {e}")
