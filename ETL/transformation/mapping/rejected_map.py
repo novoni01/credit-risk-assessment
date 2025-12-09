@@ -19,7 +19,7 @@ def map_rejected_from_kaggle(engine: Engine) -> None:
                     REGEXP_REPLACE(sr."Debt-To-Income Ratio", '[^0-9\\.]', '', 'g'),
                     ''
                 ) AS dti_str
-            FROM staging_rejected_kaggle sr
+            FROM valid_rejected_kaggle sr
         )
         INSERT INTO Rejected (
             dataset_source,
@@ -115,7 +115,7 @@ def map_rejected_from_hdma(engine: Engine) -> None:
             srh.applicant_credit_score_type,
             srh.co_applicant_credit_score_type,
             srh.denial_reason_1
-        FROM staging_rejected_hdma srh;
+        FROM valid_rejected_hdma srh;
         """
     )
 

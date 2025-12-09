@@ -46,7 +46,7 @@ def map_accepted_loans_from_kaggle(engine: Engine) -> None:
             NULL::NUMERIC(12,2)                          AS total_loan_costs,
             NULL::TEXT                                   AS derived_loan_product_type,
             NULL::TEXT                                   AS loan_purpose
-        FROM staging_accepted_kaggle sa
+        FROM valid_accepted_kaggle sa
         JOIN Borrowers b
           ON b.annual_inc            = sa.annual_inc
          AND b.dti                   = sa.dti
@@ -81,7 +81,7 @@ def map_accepted_loans_from_hdma(engine: Engine) -> None:
             SELECT
                 sh.*,
                 NULLIF(REGEXP_REPLACE(sh.debt_to_income_ratio, '[^0-9\\.]', '', 'g'),'')::NUMERIC(6,2) AS dti_clean
-            FROM staging_accepted_hdma sh
+            FROM valid_accepted_hdma sh
         ),
         hdma_with_borrower AS (
             SELECT
