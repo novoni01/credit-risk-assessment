@@ -57,7 +57,7 @@ TO SETUP DATABASE (locally)
         5. validate all data from staging tables
             python -m ETL.transformation.validation_loader -- run ONCE!!!
             -- depending on the random_seed used, the following values will always change. However with the same random seed the counts should be consistent
-            sanity check:
+            sanity check (script should auto pull length of datasets):
                 psql -d credit_risk
                     SELECT 'valid_accepted_hdma' AS table, COUNT(*) FROM valid_accepted_hdma; (199803)
                     SELECT 'valid_accepted_kaggle', COUNT(*) FROM valid_accepted_kaggle; (82074)
