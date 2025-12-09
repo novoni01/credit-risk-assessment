@@ -64,7 +64,7 @@ TO SETUP DATABASE (locally)
                     SELECT 'valid_rejected_hdma', COUNT(*) FROM valid_rejected_hdma; (186596)
                     SELECT 'valid_rejected_kaggle', COUNT(*) FROM valid_rejected_kaggle; (138132)
         6. mapping and loading into normalized schema
-            python -m ETL.transformation.transf_loader -- run ONCE!! (slow process, let it load)
+            python -m ETL.load.transf_loader -- run ONCE!! (slow process, let it load)
             sanity check:
                 psql -d credit_risk
                 (in psql)
