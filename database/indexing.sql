@@ -33,7 +33,7 @@ CREATE INDEX idx_accepted_loans_purpose ON Accepted_Loans (purpose);
 CREATE INDEX idx_accepted_loans_application_type ON Accepted_Loans (application_type);
 
 -- year-based analysis for hdma
-CREATE INDEX idx_accepted_loans_activity_yearN Accepted_Loans (activity_year);
+CREATE INDEX idx_accepted_loans_activity_year ON Accepted_Loans (activity_year);
 
 -- dti
 CREATE INDEX idx_borrowers_dti ON Borrowers (dti);
