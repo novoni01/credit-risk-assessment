@@ -22,7 +22,7 @@ from ETL.ingestion.data_ingestion_kaggle import (
     delete_large_files
 )
 
-from ETL.transformation.ml_training_acc import (
+from ETL.ml.ml_training_acc import (
     create_accepted_loans_training_view,
     preview_training_counts
 )
