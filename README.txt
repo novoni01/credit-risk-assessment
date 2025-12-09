@@ -37,14 +37,20 @@ TO SETUP DATABASE (locally)
             (in psql) CREATE DATABASE credit_risk;
             (in psql) \l -- to verify u created it
             (in psql) \q -- to exit
-        2. psql -d credit_risk -f database/database.sql
-        2.5. psql -d credit_risk -f database/indexing.sql
-        3. psql -d credit_risk -f database/staging.sql
+        2. execute the entire etl process in one line of code
+            python -m ETL.run_etl -- run ONCE!! (please be patient, takes a bit of time but its the only command you have to run)
+
+        READ!!! the below has been automated in  'run_etl.py', however the individual steps are being left so that anyone can debug if something doesn't work
+        1a. psql -d credit_risk -f database/database.sql
+        1b. psql -d credit_risk -f database/indexing.sql
+        1c. psql -d credit_risk -f database/staging.sql
             sanity check: 
                 psql -d credit_risk
                 (in psql) \dt -- should show the tables have all been loaded (total 7)
                 (in psql) \q
-        4. populate staging tables 
+
+        
+        2. populate staging tables 
             python -m ETL.transformation.staging_loader -- run ONCE!!! (slow process, let it load)
             sanity check:
                 psql -d credit_risk
@@ -54,7 +60,7 @@ TO SETUP DATABASE (locally)
                     SELECT 'staging_accepted_kaggle', COUNT(*) FROM staging_accepted_kaggle;
                     SELECT 'staging_rejected_hdma', COUNT(*) FROM staging_rejected_hdma;
                     SELECT 'staging_rejected_kaggle', COUNT(*) FROM staging_rejected_kaggle;
-        5. validate all data from staging tables
+        3. validate all data from staging tables
             python -m ETL.transformation.validation_loader -- run ONCE!!!
             -- depending on the random_seed used, the following values will always change. However with the same random seed the counts should be consistent
             sanity check (script should auto pull length of datasets):
@@ -63,7 +69,7 @@ TO SETUP DATABASE (locally)
                     SELECT 'valid_accepted_kaggle', COUNT(*) FROM valid_accepted_kaggle; (82074)
                     SELECT 'valid_rejected_hdma', COUNT(*) FROM valid_rejected_hdma; (186596)
                     SELECT 'valid_rejected_kaggle', COUNT(*) FROM valid_rejected_kaggle; (138132)
-        6. mapping and loading into normalized schema
+        4. mapping and loading into normalized schema
             python -m ETL.load.transf_loader -- run ONCE!! (slow process, let it load)
             sanity check:
                 psql -d credit_risk
