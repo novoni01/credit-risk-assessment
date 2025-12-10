@@ -4,6 +4,10 @@ Sources used:
     HMDA (Home Mortgage Disclosure Act)
         - https://ffiec.cfpb.gov/data-publication/snapshot-national-loan-level-dataset/2024
 
+BEFORE RUNNING ANY CODE
+(Recommend you make a .venv to downloaad these libraries)
+pip install -r requirements.txt
+
 TO USE KAGGLE API (Manually)
 In order to use Kaggle api you need to 
     1. Create a free kaggle account
