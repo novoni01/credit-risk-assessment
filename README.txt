@@ -19,6 +19,11 @@ data_ingestion_kaggle.py
     Module containing finalized functions to bring our project to life. Each project has a short description with how it works and the parameters required
 
 TO SETUP DATABASE (locally)
+-- if u mess up
+    psql -d postgres
+        DROP DATABASE credit_risk;
+        \l
+
 --NOTE: if you get a login error that looks like " fatal error provided for your_computer_user" and you can't login
     -> Open terminal on windows
     -> C:\Users\your_name

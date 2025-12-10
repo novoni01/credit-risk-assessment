@@ -111,12 +111,12 @@ def map_accepted_loans_from_hdma(engine: Engine) -> None:
         INSERT INTO Accepted_Loans (
             loan_id,
             borrower_id,
-            dti,
             loan_amnt,
             funded_amnt,
             term_months,
             int_rate,
             installment,
+            dti,
             loan_status,
             purpose,
             application_type,
