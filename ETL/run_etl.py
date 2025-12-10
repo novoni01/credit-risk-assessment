@@ -73,6 +73,7 @@ if __name__ == "__main__":
 
         print("=== ALL VALID TABLES WERE LOADED ===")
         confirm_lengths(engine)
+
     except Exception as e:
         print(f"Error when trying to execute validation_loader.py: {e}")
 
@@ -87,3 +88,4 @@ if __name__ == "__main__":
         print("=== DELETED all large files (KAGGLE!) ===")
     except Exception as e:
         print(f"Error when trying to delete large files: {e}")
+    
