@@ -47,6 +47,7 @@ def create_valid_accepted_kaggle(engine: Engine) -> None:
         WHERE
             id IS NOT NULL
             AND loan_amnt > 1000
+            AND loan_amnt IS NOT NULL
             AND term_months IN ('36','60')
             AND funded_amnt <= loan_amnt
             AND int_rate BETWEEN 0 AND 30
@@ -140,7 +141,7 @@ def create_valid_accepted_hdma(engine: Engine) -> None:
     FROM staging_accepted_hdma
     WHERE
         loan_amount IS NOT NULL
-        AND loan_amount > 0
+        AND loan_amount > 1000
         AND loan_term > 0
         AND income BETWEEN 0 AND 3000000
         AND debt_to_income_ratio <> ''
@@ -225,6 +226,7 @@ def create_valid_rejected_hdma(engine: Engine) -> None:
         AND preapproval IN (1,2)
         AND loan_purpose <> ''
         AND loan_purpose IS NOT NULL
+        AND loan_amount IS NOT NULL
         AND loan_amount > 0
         AND loan_term > 0
         AND loan_to_value_ratio > 0
