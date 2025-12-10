@@ -53,6 +53,7 @@ CREATE TABLE Accepted_Loans (
     term_months                     SMALLINT NOT NULL, -- map loan_term from hdma accepted
     int_rate                        NUMERIC(5, 2), -- map interest_rate from hdma accepted
     installment                     NUMERIC(12, 2),
+    dti                             NUMERIC(6, 2), -- map to "Debt-To-Income Ratio" from both kaggle and hdma
     -- kaggle - cat
     loan_status                     VARCHAR(40),                  
     purpose                         VARCHAR(50),

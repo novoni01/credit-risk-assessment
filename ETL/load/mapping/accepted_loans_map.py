@@ -14,6 +14,7 @@ def map_accepted_loans_from_kaggle(engine: Engine) -> None:
             term_months,
             int_rate,
             installment,
+            dti,
             loan_status,
             purpose,
             application_type,
@@ -36,6 +37,7 @@ def map_accepted_loans_from_kaggle(engine: Engine) -> None:
             )::SMALLINT                                  AS term_months,
             sa.int_rate,
             sa.installment,
+            sa.dti,
             LEFT(sa.loan_status, 40)                     AS loan_status,
             LEFT(sa.purpose, 50)                         AS purpose,
             LEFT(sa.application_type, 30)                AS application_type,
@@ -80,7 +82,8 @@ def map_accepted_loans_from_hdma(engine: Engine) -> None:
         WITH cleaned_hdma AS (
             SELECT
                 sh.*,
-                NULLIF(REGEXP_REPLACE(sh.debt_to_income_ratio, '[^0-9\\.]', '', 'g'),'')::NUMERIC(6,2) AS dti_clean
+                NULLIF(REGEXP_REPLACE(sh.debt_to_income_ratio, '[^0-9\\.]', '', 'g'),'')::NUMERIC(6,2) AS dti_clean,
+                NULLIF(REGEXP_REPLACE(CAST(sh.loan_amount AS TEXT), '[^0-9\\.]', '', 'g'),'')::NUMERIC(12,2) AS loan_amnt_clean
             FROM valid_accepted_hdma sh
         ),
         hdma_with_borrower AS (
@@ -101,13 +104,14 @@ def map_accepted_loans_from_hdma(engine: Engine) -> None:
                     SELECT COALESCE(MAX(al.loan_id), 0)
                     FROM Accepted_Loans al
                 ) + ROW_NUMBER() OVER (
-                    ORDER BY hw.activity_year, hw.loan_amount, hw.income
+                    ORDER BY hw.activity_year, hw.loan_amnt_clean, hw.income
                 ) AS new_loan_id
             FROM hdma_with_borrower hw
         )
         INSERT INTO Accepted_Loans (
             loan_id,
             borrower_id,
+            dti,
             loan_amnt,
             funded_amnt,
             term_months,
@@ -127,11 +131,12 @@ def map_accepted_loans_from_hdma(engine: Engine) -> None:
         SELECT
             n.new_loan_id               AS loan_id,
             n.borrower_id,
-            n.loan_amount               AS loan_amnt,
+            n.loan_amnt_clean           AS loan_amnt,
             NULL::NUMERIC(12,2)         AS funded_amnt,
             n.loan_term                 AS term_months,
             n.interest_rate             AS int_rate,
             NULL::NUMERIC(12,2)         AS installment,
+            n.dti_clean                 AS dti,
             NULL::VARCHAR(40)           AS loan_status,
             NULL::VARCHAR(50)           AS purpose,
             NULL::VARCHAR(30)           AS application_type,
