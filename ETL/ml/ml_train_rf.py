@@ -1,14 +1,14 @@
 # predict loan default using training view
-# python -m ETL.ml.ml_train
+# python -m ETL.ml.ml_train_rf
 
 """
-outputted:
+output:
 
 Loaded 81460 rows and 35 columns from accepted_loans_ml_training
 Label distribution (is_default):
 is_default
-0    71365
-1    10095
+0    71365 (good)
+1    10095 (bad)
 Name: count, dtype: int64 
 
 Numeric features: ['loan_amnt', 'funded_amnt', 'term_months', 'int_rate', 'installment', 'annual_inc', 'dti', 'delinq_2yrs', 'fico_range_low', 'fico_range_high', 'inq_last_6mths', 'open_acc', 'total_acc', 'revol_bal', 'revol_util', 'pub_rec_bankruptcies']
