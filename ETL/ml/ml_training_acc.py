@@ -50,16 +50,14 @@ def create_accepted_loans_training_view(engine: Optional[Engine] = None) -> None
             al.loan_amnt,
             al.installment,
             al.dti,
-            al.int_rate,
             al.loan_to_value_ratio,
             b.income,
-            al.term_months,   -- ★ Added field
+            al.term_months,
 
             -- cats
-            al.loan_purpose,
             al.purpose,
+            al.loan_purpose,
             al.derived_loan_product_type
-
         FROM Accepted_Loans al
         JOIN Borrowers b
           ON al.borrower_id = b.borrower_id
@@ -79,7 +77,6 @@ def create_accepted_loans_training_view(engine: Optional[Engine] = None) -> None
         conn.commit()
 
     print(f"Created view: {VIEW_NM}")
-
 
 # row counts for total/pos/nega
 def preview_training_counts(engine: Optional[Engine] = None) -> None:
@@ -103,7 +100,6 @@ def preview_training_counts(engine: Optional[Engine] = None) -> None:
         f"{VIEW_NM} -> total={total}, "
         f"defaults(1)={positives}, non_defaults(0)={negatives}"
     )
-
 
 if __name__ == "__main__":
     engine = create_engine("postgresql+psycopg2:///credit_risk")
