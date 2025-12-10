@@ -18,7 +18,6 @@ accepted_loans_ml_training -> total=81460, defaults(1)=10095, non_defaults(0)=71
 """
 
 from typing import Optional
-
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 
@@ -50,17 +49,12 @@ def create_accepted_loans_training_view(engine: Optional[Engine] = None) -> None
             al.loan_amnt,
             al.installment,
             al.dti,
-            al.loan_to_value_ratio,
-            b.income,
+            al.income,
             al.term_months,
 
             -- cats
-            al.purpose,
-            al.loan_purpose,
-            al.derived_loan_product_type
+            al.purpose
         FROM Accepted_Loans al
-        JOIN Borrowers b
-          ON al.borrower_id = b.borrower_id
         -- drops
         WHERE al.loan_status IN (
             'Charged Off',

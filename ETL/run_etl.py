@@ -22,11 +22,6 @@ from ETL.ingestion.data_ingestion_kaggle import (
     delete_large_files
 )
 
-from ETL.ml.ml_training_acc import (
-    create_accepted_loans_training_view,
-    preview_training_counts
-)
-
 def create_databases() -> None:
     sql_files = [
         "database/database.sql",
@@ -94,9 +89,3 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error when trying to delete large files: {e}")
     
-    try:
-        print("=== Creating ML TRAINING VIEW ===")
-        create_accepted_loans_training_view(engine)
-        preview_training_counts(engine)
-    except Exception as e:
-        print(f"Error when trying to execute ml_training_acc: {e}")

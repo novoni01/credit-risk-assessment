@@ -83,4 +83,8 @@ TO SETUP DATABASE (locally)
                     SELECT COUNT(*) FROM accepted_loans; -- should be 281877
                     SELECT COUNT(*) FROM rejected; -- should be 324728
 
+ML (should not be run by run_etl.py)
+    1. python -m ETL.ml.ml_training_acc
+    2. open ml.ipynb and run the top cells that have the comment "YOU HAVE TO RUN THIS CELL"
+    3. 
 
