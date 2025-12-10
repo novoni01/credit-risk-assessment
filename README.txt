@@ -85,6 +85,6 @@ TO SETUP DATABASE (locally)
 
 ML (should not be run by run_etl.py)
     1. python -m ETL.ml.ml_training_acc
-    2. open ml.ipynb and run the top cells that have the comment "YOU HAVE TO RUN THIS CELL"
+    2. open ml.ipynb and run the whole notebook
     3. 
 
