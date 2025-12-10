@@ -240,13 +240,21 @@ def kaggle_accepted_loans_df(dataframe_list = list, sample_csv = True, seed = 0)
             cleaned_accepted_loans.loc[:, rows] = cleaned_accepted_loans[rows].fillna(cleaned_accepted_loans[rows].median())
 
         finalized_accepted_df = remove_outliers(cleaned_accepted_loans)
-        
-        #Get a sample of the cleaned up df
-        if sample_csv:
-            return finalized_accepted_df.sample(200000, random_state = seed)
-        else:
-            print(f"Returning sample dataframe with random_seed: {sample_csv}")
-            return finalized_accepted_df
+    
+    
+        try:
+            if sample_csv is True and seed != 0:
+                    #Create a random seed for sampling the large dataset if no seed is provided
+                    return finalized_accepted_df.sample(200000, random_state = seed)
+            elif sample_csv is True:
+                    print(f"Random seed to replicate accepted loans df: {seed}")
+                    return finalized_accepted_df.sample(200000, random_state = seed)
+            else:
+                print(f"Sample input was set --> {sample_csv}, thus the entire dataset will be returned")
+                return finalized_accepted_df
+        except Exception as e:
+            print(f"Error when attempting to get the dataframe cleaned up : {e}")
+            return
     except Exception as e:
         print(f"Error in kaggle_accepted_loans_df: {e}")
         return
@@ -322,13 +330,19 @@ def kaggle_rejected_loans_df(dataframe_list = list, sample_csv = True, seed = 0)
         #Get a sample of the cleaned up df
         finalized_rejected_df = remove_outliers(cleaned_rejected_loans, rejected=True)
 
-        #Get a sample of the cleaned up df
-        if sample_csv:
-            return finalized_rejected_df.sample(200000, random_state = seed)
-        else:
-            print(f"Returning sample dataframe with random_seed: {sample_csv}")
-            return finalized_rejected_df
+        try:
+            if sample_csv is True and seed != 0:
+                    #Create a random seed for sampling the large dataset if no seed is provided
+                    return finalized_rejected_df.sample(200000, random_state = seed)
+            elif sample_csv is True:
+                    print(f"Random seed to replicate accepted loans df: {seed}")
+                    return finalized_rejected_df.sample(200000, random_state = seed)
+            else:
+                print(f"Sample input was set --> {sample_csv}, thus the entire dataset will be returned")
+                return finalized_rejected_df
+        except Exception as e:
+            print(f"Error when attempting to get the dataframe cleaned up : {e}")
+            return
     except Exception as e:
         print(f"Error in kaggle_rejected_loans_df: {e}")
         return
-
